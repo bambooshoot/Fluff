@@ -1,0 +1,19 @@
+global proc FluffCurveSetAttrs(string $nodeAttr, string $var)
+{
+    string $varList[] = `stringToStringArray $var ","`;
+
+    int $i=0;
+    int $numElement = `size $varList`;
+    $numElement /= 3;
+    int $i3 = 0;
+    while($i<$numElement) {
+        string $dataStr = $varList[$i3]+" "+$varList[$i3+1]+" "+$varList[$i3+2];
+        string $cmd="setAttr "+$nodeAttr+"["+$i+"] "+$dataStr;
+        eval $cmd;
+        $i3+=3;
+        ++$i;
+    }
+
+    // int $num = `getAttr -s $nodeAttr`;
+    // print $num;
+}

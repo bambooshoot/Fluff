@@ -1,0 +1,13 @@
+
+bin/*
+examples
+/vs/x64
+/vs/.vs
+plugin/*
+*.dll
+*.filters
+*.user
+*.swatches
+*.nk~
+FluffDraw/vs
+plug-ins/*

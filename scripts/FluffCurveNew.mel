@@ -1,0 +1,12 @@
+global proc FluffCurveNew(string $attr,string $curveAttr,string $control,int $startEnd)
+{
+    string $attrList[];
+    tokenize $attr "." $attrList;
+    string $node=$attrList[0];
+
+    string $nodeAttr=$node+".curve"+$curveAttr;
+
+    gradientControlNoAttr -h 90 -changeCommand ("FluffCurveCmd "+$nodeAttr+" "+$control) $control;
+
+    FluffCurveReplace($attr,$curveAttr,$control,$startEnd);
+}

@@ -1,0 +1,14 @@
+global proc FluffCurveReplace(string $attr,string $curveAttr,string $control,int $startEnd)
+{
+    string $attrList[];
+    tokenize $attr "." $attrList;
+    string $node=$attrList[0];
+
+    string $nodeAttr=$node+".curve"+$curveAttr;
+
+    string $var = FluffVarReflesh($nodeAttr,$startEnd);
+
+    gradientControlNoAttr -e
+       -asString $var
+       $control;
+}

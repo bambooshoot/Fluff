@@ -1,0 +1,8 @@
+global proc FluffCurveCmd(string $nodeAttr, string $control)
+{
+    removeArrayAttr($nodeAttr);
+    
+	string $var = `gradientControlNoAttr -q -asString $control`;
+
+	FluffCurveSetAttrs($nodeAttr, $var);
+}

@@ -1,0 +1,7 @@
+global proc removeArrayAttr(string $nodeAttr)
+{
+	int $num = `getAttr -s $nodeAttr`;
+	for($i=0; $i<$num; ++$i){
+		removeMultiInstance ($nodeAttr+"["+$i+"]");
+	}
+}

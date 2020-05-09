@@ -1,0 +1,221 @@
+#! C:/Program Files/Nuke11.0v2/nuke-11.0.2.dll -nx
+version 11.0 v2
+define_window_layout_xml {<?xml version="1.0" encoding="UTF-8"?>
+<layout version="1.0">
+    <window x="0" y="0" w="1904" h="1121" screen="0">
+        <splitter orientation="1">
+            <split size="40"/>
+            <dock id="" hideTitles="1" activePageId="Toolbar.1">
+                <page id="Toolbar.1"/>
+            </dock>
+            <split size="1241" stretch="1"/>
+            <splitter orientation="2">
+                <split size="630"/>
+                <dock id="" activePageId="Viewer.2">
+                    <page id="Viewer.1"/>
+                    <page id="Viewer.2"/>
+                </dock>
+                <split size="443"/>
+                <dock id="" activePageId="DAG.1" focus="true">
+                    <page id="DAG.1"/>
+                    <page id="Curve Editor.1"/>
+                    <page id="DopeSheet.1"/>
+                </dock>
+            </splitter>
+            <split size="615"/>
+            <dock id="" activePageId="Properties.1">
+                <page id="Properties.1"/>
+                <page id="uk.co.thefoundry.backgroundrenderview.1"/>
+            </dock>
+        </splitter>
+    </window>
+</layout>
+}
+Root {
+ inputs 0
+ name D:/asunlab/github/Fluff/test/texture.nk
+ format "2048 1556 0 0 2048 1556 1 2K_Super_35(full-ap)"
+ proxy_type scale
+ proxy_format "1024 778 0 0 1024 778 1 1K_Super_35(full-ap)"
+ colorManagement Nuke
+ workingSpaceLUT linear
+ monitorLut sRGB
+ int8Lut sRGB
+ int16Lut sRGB
+ logLut Cineon
+ floatLut linear
+}
+Constant {
+ inputs 0
+ channels rgb
+ format "1024 1024 0 0 1024 1024 1 square_1K"
+ name Constant1
+ xpos -275
+ ypos -126
+}
+set N41e3aa80 [stack 0]
+Grid {
+ number 100
+ size 4.2
+ name Grid1
+ xpos -275
+ ypos -27
+}
+Blur {
+ size 2.4
+ name Blur1
+ xpos -275
+ ypos 31
+}
+Invert {
+ name Invert1
+ xpos -275
+ ypos 83
+}
+Write {
+ file D:/asunlab/github/Fluff/test/clump.exr
+ file_type exr
+ version 2
+ in_colorspace linear
+ out_colorspace linear
+ name Write1
+ xpos -275
+ ypos 145
+}
+push $N41e3aa80
+Noise {
+ size 300
+ zoffset 2.76
+ octaves 3
+ lacunarity 1.5
+ gain 0.505
+ gamma 0.55
+ center {1024 778}
+ name Noise2
+ xpos -9
+ ypos -50
+}
+Grade {
+ channels rgba
+ blackpoint 0.095
+ whitepoint 0.4
+ name Grade1
+ xpos -9
+ ypos -24
+}
+Constant {
+ inputs 0
+ channels rgb
+ color {0.341653 0.825069 1 0}
+ color_panelDropped true
+ format "1024 1024 0 0 1024 1024 1 square_1K"
+ name Constant3
+ xpos 275
+ ypos -73
+}
+Constant {
+ inputs 0
+ channels rgb
+ color {0.155 0.455 1 0}
+ color_panelDropped true
+ format "1024 1024 0 0 1024 1024 1 square_1K"
+ name Constant2
+ xpos 140
+ ypos -72
+}
+Blend {
+ inputs 2+1
+ name Blend1
+ xpos 151
+ ypos 29
+}
+Write {
+ file D:/asunlab/github/Fluff/test/color.exr
+ file_type exr
+ version 6
+ in_colorspace linear
+ out_colorspace linear
+ name Write3
+ xpos 151
+ ypos 82
+}
+Read {
+ inputs 0
+ file D:/asunlab/github/Fluff/test/layers.exr
+ format "1024 1024 0 0 1024 1024 1 square_1K"
+ origset true
+ name Read2
+ xpos -424
+ ypos 7
+}
+add_layer {length length.red length.green length.blue}
+Viewer {
+ frame 1
+ frame_range 1-100
+ channels length
+ viewerProcess None
+ name Viewer1
+ xpos 104
+ ypos 302
+}
+push $N41e3aa80
+Ramp {
+ p0 {108 228}
+ p1 {104 1038}
+ name Ramp1
+ xpos -8
+ ypos 40
+}
+Write {
+ file D:/asunlab/github/Fluff/test/ramp.exr
+ file_type exr
+ datatype "32 bit float"
+ compression none
+ version 2
+ name Write4
+ xpos -8
+ ypos 145
+}
+Read {
+ inputs 0
+ file D:/asunlab/github/Fluff/test/layers.exr
+ format "1024 1024 0 0 1024 1024 1 square_1K"
+ origset true
+ version 1
+ name Read1
+ xpos -241
+ ypos 206
+}
+push $N41e3aa80
+Noise {
+ size 145
+ lacunarity 1.75
+ gain 0.242
+ gamma 0.315
+ center {1024 778}
+ name Noise1
+ xpos -112
+ ypos 33
+}
+Grade {
+ gamma 2.3
+ name Grade2
+ xpos -112
+ ypos 59
+}
+Write {
+ file D:/asunlab/github/Fluff/test/fuzzy.exr
+ file_type exr
+ version 4
+ name Write2
+ xpos -112
+ ypos 143
+}
+Viewer {
+ frame_range 1-100
+ channels rgb
+ viewerProcess None
+ name Viewer2
+ xpos -210
+ ypos 310
+}

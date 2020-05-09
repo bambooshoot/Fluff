@@ -1,0 +1,403 @@
+global proc FluffSetRestSkinMesh(string $node)
+{
+    string $restSkinMeshAttr = `textFieldButtonGrp -q -text fluff_textField_restSkinMesh`;
+    setAttr ($node+".restSkinMesh") -type "string" $restSkinMeshAttr;
+}
+global proc FluffSetDeformedSkinMesh(string $node)
+{
+    string $deformedSkinMeshAttr = `textFieldButtonGrp -q -text fluff_textField_deformedSkinMesh`;
+    setAttr ($node+".deformedSkinMesh") -type "string" $deformedSkinMeshAttr;
+}
+global proc FluffSetCollisionSkinMesh(string $node)
+{
+    string $collisionSkinMeshAttr = `textFieldButtonGrp -q -text fluff_textField_collisionSkinMesh`;
+    setAttr ($node+".collisionSkinMesh") -type "string" $collisionSkinMeshAttr;
+}
+global proc FluffSetTexture(string $node)
+{
+    string $fileName = `textFieldButtonGrp -q -fileName fluff_textField_texture`;
+    setAttr ($node+".texture") -type "string" $fileName;
+}
+global proc FluffSetTextureEnable(string $node)
+{
+    int $bitEnList[9];
+
+    $bitEnList[0] = `checkBox -q -value fluff_checkBoxGrp_enableDensity`;
+    $bitEnList[1] = `checkBox -q -value fluff_checkBoxGrp_enableGradient`;
+    $bitEnList[2] = `checkBox -q -value fluff_checkBoxGrp_enablesplit`;
+    $bitEnList[3] = `checkBox -q -value fluff_checkBoxGrp_enableNormal`;
+    $bitEnList[4] = `checkBox -q -value fluff_checkBoxGrp_enableLength`;
+    $bitEnList[5] = `checkBox -q -value fluff_checkBoxGrp_enableDisplace`;
+    $bitEnList[6] = `checkBox -q -value fluff_checkBoxGrp_enableWidth`;
+    $bitEnList[7] = `checkBox -q -value fluff_checkBoxGrp_enableFuzzy`;
+    $bitEnList[8] = `checkBox -q -value fluff_checkBoxGrp_enableClump`;
+
+    int $texEnable = 0;
+    int $i;
+    int $levelTimes = 1;
+    for ($i=0; $i<9; ++$i) {
+        $texEnable += $bitEnList[$i] * $levelTimes;
+        $levelTimes *= 2;
+    }
+
+    setAttr ($node+".textureEnable") $texEnable;
+}
+global proc FluffCustomPanelNew(string $attr)
+{
+    string $attrList[];
+    tokenize $attr "." $attrList;
+    string $node=$attrList[0];
+    
+    textFieldButtonGrp -label "restSkinMesh" -text "" -buttonLabel "Select" fluff_textField_restSkinMesh;
+    textFieldButtonGrp -label "deformedSkinMesh" -text "" -buttonLabel "Select" fluff_textField_deformedSkinMesh;
+    textFieldButtonGrp -label "collisionSkinMesh" -text "" -buttonLabel "Select" fluff_textField_collisionSkinMesh;
+    textFieldButtonGrp -label "texture" -fileName "" -buttonLabel "Pick" fluff_textField_texture;
+
+    columnLayout -adjustableColumn true;
+
+        checkBox -label "Density" -value 1 fluff_checkBoxGrp_enableDensity;
+        checkBox -label "Gradient" -value 1 fluff_checkBoxGrp_enableGradient;
+        checkBox -label "Split" -value 1 fluff_checkBoxGrp_enablesplit;
+        checkBox -label "Normal" -value 1 fluff_checkBoxGrp_enableNormal;
+        checkBox -label "Length" -value 1 fluff_checkBoxGrp_enableLength;
+        checkBox -label "Displace" -value 1 fluff_checkBoxGrp_enableDisplace;
+        checkBox -label "Width" -value 1 fluff_checkBoxGrp_enableWidth;
+        checkBox -label "Fuzzy" -value 1 fluff_checkBoxGrp_enableFuzzy;
+        checkBox -label "Clump" -value 1 fluff_checkBoxGrp_enableClump;
+
+    setParent ..;
+
+    FluffCustomPanelReplace($attr);
+}
+global proc FluffCustomPanelReplace(string $attr)
+{
+    string $attrList[];
+    tokenize $attr "." $attrList;
+    string $node=$attrList[0];
+
+    int $texEnable = `getAttr ($node+".textureEnable")`;
+    int $texEnFlags[9];
+    int $i;
+    for($i=0; $i<9; ++$i) {
+        $texEnFlags[$i] = $texEnable%2;
+        $texEnable/=2;
+    }
+
+    string $restSkinMeshStr = `getAttr ($node+".restSkinMesh")`;
+    string $deformedSkinMeshStr = `getAttr ($node+".deformedSkinMesh")`;
+    string $collisionSkinMeshStr = `getAttr ($node+".collisionSkinMesh")`;
+    string $fileName = `getAttr ($node+".texture")`;
+
+    textFieldButtonGrp -e -text $restSkinMeshStr -textChangedCommand ("FluffSetRestSkinMesh "+$node) -bc ("FluffSelectRestSkinMesh "+$node) fluff_textField_restSkinMesh;
+    textFieldButtonGrp -e -text $deformedSkinMeshStr -textChangedCommand ("FluffSetDeformedSkinMesh "+$node) -bc ("FluffSelectDeformedSkinMesh "+$node) fluff_textField_deformedSkinMesh;
+    textFieldButtonGrp -e -text $collisionSkinMeshStr -textChangedCommand ("FluffSetCollisionSkinMesh "+$node) -bc ("FluffSelectCollisionSkinMesh "+$node) fluff_textField_collisionSkinMesh;
+    textFieldButtonGrp -e -fileName $fileName -textChangedCommand ("FluffSetTexture "+$node) -bc ("FluffPickFile "+$node) fluff_textField_texture;
+
+    checkBox -e -value $texEnFlags[0] -cc ("FluffSetTextureEnable "+$node) fluff_checkBoxGrp_enableDensity;
+    checkBox -e -value $texEnFlags[1] -cc ("FluffSetTextureEnable "+$node) fluff_checkBoxGrp_enableGradient;
+    checkBox -e -value $texEnFlags[2] -cc ("FluffSetTextureEnable "+$node) fluff_checkBoxGrp_enablesplit;
+    checkBox -e -value $texEnFlags[3] -cc ("FluffSetTextureEnable "+$node) fluff_checkBoxGrp_enableNormal;
+    checkBox -e -value $texEnFlags[4] -cc ("FluffSetTextureEnable "+$node) fluff_checkBoxGrp_enableLength;
+    checkBox -e -value $texEnFlags[5] -cc ("FluffSetTextureEnable "+$node) fluff_checkBoxGrp_enableDisplace;
+    checkBox -e -value $texEnFlags[6] -cc ("FluffSetTextureEnable "+$node) fluff_checkBoxGrp_enableWidth;
+    checkBox -e -value $texEnFlags[7] -cc ("FluffSetTextureEnable "+$node) fluff_checkBoxGrp_enableFuzzy;
+    checkBox -e -value $texEnFlags[8] -cc ("FluffSetTextureEnable "+$node) fluff_checkBoxGrp_enableClump;
+}
+global proc FluffSetVisualEnable(string $node)
+{
+    int $bitEnList[2];
+
+    $bitEnList[0] = `checkBox -q -value fluff_checkBoxGrp_enVisShape`;
+    $bitEnList[1] = `checkBox -q -value fluff_checkBoxGrp_enVisCollision`;
+
+    int $enVis = 0;
+    int $i;
+    int $levelTimes = 1;
+    for ($i=0; $i<2; ++$i) {
+        $enVis += $bitEnList[$i] * $levelTimes;
+        $levelTimes *= 2;
+    }
+
+    print "enableVisual";
+    print $enVis;
+
+    setAttr ($node+".enableVisual") $enVis;
+}
+global proc FluffVisualizationPanelNew(string $attr)
+{
+    string $attrList[];
+    tokenize $attr "." $attrList;
+    string $node=$attrList[0];
+
+    columnLayout -adjustableColumn true;
+
+        checkBox -label "visShape" -value 1 fluff_checkBoxGrp_enVisShape;
+        checkBox -label "visCollision" -value 1 fluff_checkBoxGrp_enVisCollision;
+
+    setParent ..;
+
+    FluffVisualizationPanelReplace($attr);
+}
+global proc FluffVisualizationPanelReplace(string $attr)
+{
+    string $attrList[];
+    tokenize $attr "." $attrList;
+    string $node=$attrList[0];
+
+    int $enVis = `getAttr ($node+".enableVisual")`;
+    int $visFlags[2];
+    int $i;
+    for($i=0; $i<2; ++$i) {
+        $visFlags[$i] = $enVis%2;
+        $enVis/=2;
+    }
+
+    checkBox -e -value $visFlags[0] -cc ("FluffSetVisualEnable "+$node) fluff_checkBoxGrp_enVisShape;
+    checkBox -e -value $visFlags[1] -cc ("FluffSetVisualEnable "+$node) fluff_checkBoxGrp_enVisCollision;
+}
+global proc FluffSelectRestSkinMesh(string $node)
+{
+    string $selList[]=`ls -sl -dag -type mesh`;
+    if(`size $selList`) {
+        textFieldButtonGrp -e -text $selList[0] fluff_textField_restSkinMesh;
+    }
+}
+global proc FluffSelectDeformedSkinMesh(string $node)
+{
+    string $selList[]=`ls -sl -dag -type mesh`;
+    if(`size $selList`) {
+        textFieldButtonGrp -e -text $selList[0] fluff_textField_deformedSkinMesh;
+    }
+}
+global proc FluffSelectCollisionSkinMesh(string $node)
+{
+    string $selList[]=`ls -sl -dag -type mesh`;
+    if(`size $selList`) {
+        textFieldButtonGrp -e -text $selList[0] fluff_textField_collisionSkinMesh;
+    }
+}
+global proc FluffPickFile(string $node)
+{
+    string $filename[] = `fileDialog2 -fileMode 1 -caption "Pick A Texture File" -fileFilter "*.exr"`;
+    textFieldButtonGrp -e -fileName $filename[0] fluff_textField_texture;
+}
+global proc FluffCurveWidthReplace(string $attr)
+{
+    FluffCurveReplace($attr,"Width","FluffCurveWidthControl",1);
+}
+global proc FluffCurveWidthNew(string $attr)
+{
+    FluffCurveNew($attr,"Width","FluffCurveWidthControl",1);
+}
+global proc FluffCurveSplitReplace(string $attr)
+{
+    FluffCurveReplace($attr,"Split","FluffCurveSplitControl",0);
+}
+global proc FluffCurveSplitNew(string $attr)
+{
+    FluffCurveNew($attr,"Split","FluffCurveSplitControl",0);
+}
+global proc FluffCurveNormalReplace(string $attr)
+{
+    FluffCurveReplace($attr,"Normal","FluffCurveNormalControl",0);
+}
+global proc FluffCurveNormalNew(string $attr)
+{
+    FluffCurveNew($attr,"Normal","FluffCurveNormalControl",0);
+}
+global proc FluffCurveFuzzyReplace(string $attr)
+{
+    FluffCurveReplace($attr,"Fuzzy","FluffCurveFuzzyControl",0);
+}
+global proc FluffCurveFuzzyNew(string $attr)
+{
+    FluffCurveNew($attr,"Fuzzy","FluffCurveFuzzyControl",0);
+}
+global proc FluffCurveCollisionReplace(string $attr)
+{
+    FluffCurveReplace($attr,"Collision","FluffCurveCollisionControl",0);
+}
+global proc FluffCurveCollisionNew(string $attr)
+{
+    FluffCurveNew($attr,"Collision","FluffCurveCollisionControl",0);
+}
+global proc FluffCurveClumpNew(string $attr)
+{
+    FluffCurveNew($attr,"Clump","FluffCurveClumpControl",0);
+}
+global proc FluffCurveClumpReplace(string $attr)
+{
+    FluffCurveReplace($attr,"Clump","FluffCurveClumpControl",0);
+}
+global proc FluffCurveMultiRadiusNew(string $attr)
+{
+    FluffCurveNew($attr,"MultiRadius","FluffCurveMultiRadiusControl",0);
+}
+global proc FluffCurveMultiRadiusReplace(string $attr)
+{
+    FluffCurveReplace($attr,"MultiRadius","FluffCurveMultiRadiusControl",0);
+}
+global proc AEFluffTemplate(string $nodeName) {
+
+    string $genAttrList[]={
+        "renderMode",
+        "curveMode",
+        "unitMode",
+        "segmentNum",
+        "minPixelWidth",
+        "seed",
+        "density",
+        "minDensity"
+    };
+
+    string $ringAttrList[]={
+        "ringWidth"
+    };
+
+    string $multiAttrList[]={
+        "multiNum",
+        "multiRadius",
+        "multiRadiusRand",
+        "multiLengthRand"
+    };
+
+    string $clumpAttrList[]={
+        "clumpMethod",
+        "clumpDensity",
+        "clump",
+        "clumpOffset"
+    };
+
+    string $splitAttrList[]={
+        "split",
+        "splitScale",
+        "splitOffset",
+        "splitUVScale"
+    };
+
+    string $normalAttrList[]={
+        "normalRatio",
+        "normalScale",
+        "normalUVScale"
+    };
+
+    string $lenAttrList[]={
+        "length",
+        "lengthRandom",
+        "lengthOffset"
+    };
+
+    string $widthAttrList[] = {
+        "width",
+        "widthRandom"
+    };
+
+    string $fuzzyAttrList[]={
+        "fuzzy",
+        "fuzzyMin",
+        "fuzzyMax",
+        "fuzzyOctaves",
+        "fuzzyDistortion",
+        "fuzzyLacunarity",
+        "fuzzySegFreq",
+        "fuzzyCurveFreq"
+    };
+
+    string $collisionAttrList[]={
+        "collision",
+        "surfaceValue",
+        "vdbVoxelSize",
+        "vdbBandWidth"
+    };
+
+    string $attr;
+    for ($attr in `listAttr $nodeName`)
+    {
+        editorTemplate -suppress $attr;    
+    }
+
+    editorTemplate -beginScrollLayout;
+
+    string $curAttr;
+
+    editorTemplate -beginLayout "General" -collapse false;
+    editorTemplate -callCustom "FluffCustomPanelNew" "FluffCustomPanelReplace" "";
+    editorTemplate -endLayout;
+
+    editorTemplate -beginLayout "Visualization" -collapse false;
+    editorTemplate -callCustom "FluffVisualizationPanelNew" "FluffVisualizationPanelReplace" "";
+    editorTemplate -endLayout;
+
+    editorTemplate -beginLayout "Generate" -collapse false;
+    for($curAttr in $genAttrList){
+        editorTemplate -addControl $curAttr;
+    }
+    editorTemplate -endLayout;
+
+    editorTemplate -beginLayout "Ring" -collapse false;
+    for($curAttr in $ringAttrList){
+        editorTemplate -addControl $curAttr;
+    }
+    editorTemplate -endLayout;
+
+    editorTemplate -beginLayout "Multi" -collapse false;
+    for($curAttr in $multiAttrList){
+        editorTemplate -addControl $curAttr;
+    }
+    editorTemplate -callCustom "FluffCurveMultiRadiusNew" "FluffCurveMultiRadiusReplace" "";
+    editorTemplate -endLayout;
+
+    editorTemplate -beginLayout "Length" -collapse false;
+    for($curAttr in $lenAttrList){
+        editorTemplate -addControl $curAttr;
+    }
+    editorTemplate -endLayout;
+
+    editorTemplate -beginLayout "Width" -collapse false;
+    for($curAttr in $widthAttrList){
+        editorTemplate -addControl $curAttr;
+    }
+    editorTemplate -callCustom "FluffCurveWidthNew" "FluffCurveWidthReplace" "";
+    editorTemplate -endLayout;
+
+    editorTemplate -beginLayout "Clump" -collapse false;
+    for($curAttr in $clumpAttrList){
+        editorTemplate -addControl $curAttr;
+    }
+    editorTemplate -callCustom "FluffCurveClumpNew" "FluffCurveClumpReplace" "";
+    editorTemplate -endLayout;
+
+    editorTemplate -beginLayout "Split" -collapse false;
+    for($curAttr in $splitAttrList){
+        editorTemplate -addControl $curAttr;
+    }
+    editorTemplate -callCustom "FluffCurveSplitNew" "FluffCurveSplitReplace" "";
+    editorTemplate -endLayout;
+
+    editorTemplate -beginLayout "Normal" -collapse false;
+    for($curAttr in $normalAttrList){
+        editorTemplate -addControl $curAttr;
+    }
+    editorTemplate -callCustom "FluffCurveNormalNew" "FluffCurveNormalReplace" "";
+    editorTemplate -endLayout;
+
+    editorTemplate -beginLayout "Fuzzy" -collapse false;
+    for($curAttr in $fuzzyAttrList){
+        editorTemplate -addControl $curAttr;
+    }
+    editorTemplate -callCustom "FluffCurveFuzzyNew" "FluffCurveFuzzyReplace" "";
+    editorTemplate -endLayout;
+
+    editorTemplate -beginLayout "Collision" -collapse false;
+    for($curAttr in $collisionAttrList){
+        editorTemplate -addControl $curAttr;
+    }
+    editorTemplate -callCustom "FluffCurveCollisionNew" "FluffCurveCollisionReplace" "";
+    editorTemplate -endLayout;
+    
+    AEdependNodeTemplate $nodeName;
+
+    editorTemplate -addExtraControls;
+    
+    editorTemplate -endScrollLayout;
+}
